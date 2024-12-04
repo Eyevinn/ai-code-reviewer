@@ -1,10 +1,9 @@
-import fastify from 'fastify';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Static, Type } from '@sinclair/typebox';
-import { FastifyPluginCallback } from 'fastify';
+import fastify, { FastifyPluginCallback } from 'fastify';
 
 const HelloWorld = Type.String({
   description: 'The magical words!'
@@ -14,7 +13,11 @@ export interface HealthcheckOptions {
   title: string;
 }
 
-const healthcheck: FastifyPluginCallback<HealthcheckOptions> = (fastify, opts, next) => {
+const healthcheck: FastifyPluginCallback<HealthcheckOptions> = (
+  fastify,
+  opts,
+  next
+) => {
   fastify.get<{ Reply: Static<typeof HelloWorld> }>(
     '/',
     {
@@ -62,4 +65,4 @@ export default (opts: ApiOptions) => {
   // register other API routes here
 
   return api;
-}
+};
