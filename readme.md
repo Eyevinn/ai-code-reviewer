@@ -1,19 +1,69 @@
-# {{Name}}
+<h1 align="center">
+  AI Code Reviewer
+</h1>
 
-<!--
+<div align="center">
+  Let AI review your code as a first step to improve your code quality!
+  <br />
+  <br />
+</div>
+
+<div align="center">
+<br />
+
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/eyevinn/{{repo-name}}/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![made with hearth by Eyevinn](https://img.shields.io/badge/made%20with%20%E2%99%A5%20by-Eyevinn-59cbe8.svg?style=flat-square)](https://github.com/eyevinn)
+[![Slack](http://slack.streamingtech.se/badge.svg)](http://slack.streamingtech.se)
+
+</div>
 
 ## Requirements
-Add any external project dependencies such as node.js version etc here
+
+- Node.js v18.0.0 or higher
+- A modern web browser (Chrome, Firefox, Safari, Edge)
+- OpenAI API key
+
+### Eyevinn Open Source Cloude mode
+
+If you want to run this project in a cloud environment you can run it as a service on [Eyevinn Open Source Cloud](www.osaas.io). All you need to do is to create a free account and try it out!
 
 ## Installation / Usage
 
-Add clear instructions on how to use the project here
+```bash
+% npm install
+```
+
+### Running the server
+
+To start the server you can run the following command:
+
+```bash
+% OPENAI_API_KEY=your_api_key npm run dev
+```
+
+or
+
+```bash
+% OPENAI_API_KEY=your_api_key npm run start
+```
+
+### Running the frontend
+
+To run the frontend you can run the following command:
+
+```bash
+% npm run dev:app
+```
+
+When both the server and frontend is up and running you can provide a gitHub URL in the GUI and the AI will review the code and provide feedback.
 
 ## Development
 
-Add clear instructions on how to start development of the project here
+In the src folder you can find the code for the frontend and the server.
 
--->
+The api.ts file is the entry point for the server and contains the routes and the logic for the server.
+
+In the directory /src/app you can find the code for the frontend.
 
 ### Contributing
 
