@@ -3,13 +3,9 @@ import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Static, Type } from '@sinclair/typebox';
-import fastify, {
-  FastifyPluginCallback,
-  FastifyReply,
-  FastifyRequest
-} from 'fastify';
+import fastify, { FastifyPluginCallback } from 'fastify';
 import { ErrorResponse } from './api/errors';
-import { ReviewResponse, reviewSchema } from './service/models';
+import { ReviewResponse, ReviewSchema } from './service/models';
 import { generateReview } from './service/models/openai';
 
 const HelloWorld = Type.String({
@@ -67,23 +63,15 @@ const createReview: FastifyPluginCallback<ReviewOptions> = (
       schema: {
         description:
           'Generate a review from a given GitHub repository URL using OpenAI',
-        body: Type.Object({
-          githubUrl: Type.String({
-            format: 'url',
-            description: 'The GitHub repo URL to analyze'
-          })
-        }),
+        body: ReviewRequestSchema,
         response: {
-          200: reviewSchema,
+          200: ReviewSchema,
           400: ErrorResponse,
           500: ErrorResponse
         }
       }
     },
-    async (
-      request: FastifyRequest<{ Body: ReviewRequestBody }>,
-      reply: FastifyReply
-    ) => {
+    async (request, reply) => {
       const { githubUrl } = request.body;
       try {
         const review = await generateReview(githubUrl);
@@ -92,9 +80,9 @@ const createReview: FastifyPluginCallback<ReviewOptions> = (
         if (error instanceof Error) {
           reply
             .status(500)
-            .send({ review: `An error occurred: ${error.message}` });
+            .send({ reason: `An error occurred: ${error.message}` });
         } else {
-          reply.status(500).send({ review: 'An unknown error occurred' });
+          reply.status(500).send({ reason: 'An unknown error occurred' });
         }
       }
     }

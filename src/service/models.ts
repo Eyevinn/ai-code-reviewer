@@ -9,7 +9,7 @@ export type repositoryReviewResponse = Static<
   typeof GithubRepositoryReviewSchema
 >;
 
-export const reviewSchema = Type.Object({
+export const ReviewSchema = Type.Object({
   review: Type.Object({
     metadata: Type.Object({
       repository_name: Type.String(),
@@ -53,4 +53,4 @@ export const reviewSchema = Type.Object({
   })
 });
 
-export type ReviewResponse = Static<typeof reviewSchema>;
+export type ReviewResponse = Static<typeof ReviewSchema>;
