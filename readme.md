@@ -44,8 +44,12 @@ To start the server you can run the following command:
 or
 
 ```bash
-% OPENAI_API_KEY=your_api_key npm run start
+% OPENAI_API_KEY=your_api_key \
+  OPENAI_REVIEW_ASST=openai_asst_id \
+  npm start
 ```
+
+Frontend is available at http://localhost:8000/ and API docs at http://localhost:8000/api/docs
 
 ### Running the frontend
 
