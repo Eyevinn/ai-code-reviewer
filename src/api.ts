@@ -75,7 +75,7 @@ const createReview: FastifyPluginCallback<ReviewOptions> = (
       const { githubUrl } = request.body;
       try {
         const review = await generateReview(githubUrl);
-        reply.send({ review });
+        reply.send({ review: review.review });
       } catch (error) {
         if (error instanceof Error) {
           reply

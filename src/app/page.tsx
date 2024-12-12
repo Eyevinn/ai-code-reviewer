@@ -71,7 +71,7 @@ export default function Page() {
           </form>
         </CardBody>
         <CardFooter className="text-sm italic">
-          Please remember that the AI can make misstakes and falty asumptions
+          Please remember that the AI can make misstakes and falty assumptions
         </CardFooter>
       </Card>
       {isLoading ? <Spinner /> : <Review review={review} error={err} />}
