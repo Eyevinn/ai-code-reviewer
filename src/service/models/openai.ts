@@ -1,19 +1,45 @@
 import OpenAI from 'openai';
 import { TextContentBlock } from 'openai/resources/beta/threads/messages';
+import { ReviewSchema } from '../models';
+import { REVIEW_PROMPT } from './review_prompt';
 
 const OPENAI_API_KEY =
   process.env.OPENAI_API_KEY || 'DID_NOT_SET_OPENAI_API_KEY';
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+const myAssistantName = process.env.OPENAI_REVIEW_ASST;
 
 export enum ThreadType {
   OSAAS_REVIEWER = 'osaas_reviewer'
 }
 
-export const Assistants = {
-  [ThreadType.OSAAS_REVIEWER]:
-    process.env.OPENAI_REVIEW_ASST || 'asst_WMThAHiv8huPr2SBAeLX34rm'
-} as const;
+// Function to create or get assistant
+async function getOrCreateAssistant() {
+  const assistants = await openai.beta.assistants.list();
+  const existingAssistant = assistants.data.find(
+    (a) => a.name === myAssistantName
+  );
+
+  if (existingAssistant) {
+    return existingAssistant.id;
+  }
+
+  const assistant = await openai.beta.assistants.create({
+    name: 'Code Review Assistant',
+    instructions: REVIEW_PROMPT,
+    model: 'gpt-4o-mini',
+    response_format: {
+      type: 'json_schema',
+      json_schema: {
+        name: 'Code_Review_Schema',
+        schema: ReviewSchema,
+        strict: true
+      }
+    }
+  });
+
+  return assistant.id;
+}
 
 function getLatestAssistantMessage(
   messages: OpenAI.Beta.Threads.Messages.Message[]
@@ -43,14 +69,18 @@ async function runAssistant(
   });
 }
 
-export async function generateReview(githubUrl: string) {
+export async function generateReview(
+  githubUrl: string
+): Promise<typeof ReviewSchema> {
+  const assistantId = await getOrCreateAssistant();
   const threadId = (await openai.beta.threads.create()).id;
+
   await openai.beta.threads.messages.create(threadId, {
     role: 'user',
-    content: githubUrl
+    content: `Please review this GitHub repository: ${githubUrl}`
   });
 
-  await runAssistant(Assistants[ThreadType.OSAAS_REVIEWER], threadId);
+  await runAssistant(assistantId, threadId);
 
   const messages = await openai.beta.threads.messages.list(threadId);
   const review = getLatestAssistantMessage(messages.data);
@@ -58,5 +88,6 @@ export async function generateReview(githubUrl: string) {
   if (!review) {
     throw new Error(`[openai:generateReview(${githubUrl})] No review found`);
   }
-  return JSON.parse(review);
+  const response: typeof ReviewSchema = JSON.parse(review);
+  return response;
 }

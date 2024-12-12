@@ -29,7 +29,7 @@
     "@nextui-org/react": "^2.4.6",
     "@sinclair/typebox": "^0.29.0",
     "@tabler/icons-react": "^3.19.0",
-    "fastify": "4.23.2",
+    "fastify": "^4.23.2",
     "ioredis": "^5.4.1",
     "next": "^14.2.15",
     "nodemon": "^3.1.7",
