@@ -1,0 +1,26 @@
+name: Perform code review
+
+on: [pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Review branch
+        id: review
+        uses: EyevinnOSC/code-review-action@main
+        with:
+          repo_url: ${{ github.server_url }}/${{ github.repository }}/tree/${{ github.head_ref}}
+        env:
+          OSC_ACCESS_TOKEN: ${{ secrets.OSC_ACCESS_TOKEN }}
+      - name: comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Code review score: ${{ steps.review.outputs.score }}\n${{ join(fromJSON(steps.review.outputs.suggestions), ', ') }}'
+            })
