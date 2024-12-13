@@ -17,7 +17,7 @@ export enum ThreadType {
 async function getOrCreateAssistant() {
   const assistants = await openai.beta.assistants.list();
   const existingAssistant = assistants.data.find(
-    (a) => a.name === myAssistantName
+    (a) => a.name === myAssistantName || a.name === 'Code Review Assistant'
   );
 
   if (existingAssistant) {
