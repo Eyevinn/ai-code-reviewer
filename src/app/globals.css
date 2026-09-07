@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --nextui-divider-opacity: 1;
+  --heroui-divider-opacity: 1;
 }
 
 @font-face {

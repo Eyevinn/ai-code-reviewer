@@ -2,25 +2,50 @@ name: Perform code review
 
 on: [pull_request]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - name: Review branch
         id: review
-        uses: EyevinnOSC/code-review-action@main
+        uses: EyevinnOSC/code-review-action@938ff16aaa42f7aad969e75efe93cfee11dc4368 # v1
         with:
-          repo_url: ${{ github.server_url }}/${{ github.repository }}/tree/${{ github.head_ref}}
+          repo_url: ${{ github.event.pull_request.html_url }}
         env:
           OSC_ACCESS_TOKEN: ${{ secrets.OSC_ACCESS_TOKEN }}
       - name: comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          REVIEW_SCORE: ${{ steps.review.outputs.score }}
+          REVIEW_SUGGESTIONS: ${{ steps.review.outputs.suggestions }}
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.rest.issues.createComment({
+            const rawSuggestions = process.env.REVIEW_SUGGESTIONS || '[]';
+            let suggestions;
+
+            try {
+              const parsedSuggestions = JSON.parse(rawSuggestions);
+              suggestions = Array.isArray(parsedSuggestions)
+                ? parsedSuggestions.join(', ')
+                : String(parsedSuggestions);
+            } catch {
+              suggestions = rawSuggestions;
+            }
+
+            const body = [
+              `Code review score: ${process.env.REVIEW_SCORE || 'unknown'}`,
+              suggestions,
+            ].join('\n').slice(0, 60_000);
+
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Code review score: ${{ steps.review.outputs.score }}\n${{ join(fromJSON(steps.review.outputs.suggestions), ', ') }}'
-            })
+              body,
+            });

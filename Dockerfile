@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=node:18-alpine
+ARG NODE_IMAGE=node:24-alpine
 
 FROM ${NODE_IMAGE}
 ENV NODE_ENV=production
@@ -12,6 +12,7 @@ WORKDIR /app
 COPY --chown=node:node . .
 # Delete prepare script to avoid errors from husky
 RUN npm pkg delete scripts.prepare \
-    && npm ci --omit=dev
+    && npm ci --include=dev --no-audit --no-fund
 RUN npm run build:app
+RUN npm prune --omit=dev --no-audit --no-fund
 CMD [ "npm", "run", "start" ]

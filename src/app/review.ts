@@ -1,4 +1,5 @@
-import { ReviewResponse } from '@/service/models';
+import { Value } from '@sinclair/typebox/value';
+import { ReviewResponse, ReviewSchema } from '../service/models';
 import { ActionResponse } from './utils';
 
 export async function generateReview(
@@ -14,7 +15,15 @@ export async function generateReview(
     body: JSON.stringify({ githubUrl })
   });
   if (!response.ok) {
-    return [undefined, `Failed to generate review: ${response.statusText}`];
+    const error = (await response.json().catch(() => undefined)) as
+      { reason?: unknown } | undefined;
+    const reason =
+      typeof error?.reason === 'string' ? error.reason : response.statusText;
+    return [undefined, `Failed to generate review: ${reason}`];
   }
-  return [await response.json()];
+  const review = await response.json();
+  if (!Value.Check(ReviewSchema, review)) {
+    return [undefined, 'The review API returned an invalid response'];
+  }
+  return [review];
 }

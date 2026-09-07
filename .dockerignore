@@ -1,4 +1,8 @@
 node_modules
 .git
+.env*
+.next
+coverage
+out
 **/__mocks__
 **/*.test.ts

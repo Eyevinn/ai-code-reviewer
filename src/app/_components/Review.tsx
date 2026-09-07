@@ -1,10 +1,12 @@
 import { ReviewResponse } from '@/service/models';
-import { Card, CardBody, CardHeader } from '@nextui-org/react';
+import { Card, CardBody, CardHeader } from '@heroui/react';
 
 type ReviewProps = {
   review: ReviewResponse | undefined;
   error: string;
 };
+
+const displayValue = (value: string | number | null) => value ?? 'Unknown';
 
 export default function Review({ review, error }: ReviewProps) {
   return (
@@ -14,8 +16,7 @@ export default function Review({ review, error }: ReviewProps) {
           <CardHeader className="flex flex-col justify-start items-start">
             <h2 className="text-2xl">Review of the Repository</h2>
             <p className="text-sm italic">
-              NOTE! Some of the numbers do not match the actual values - this
-              because of limitations of the AI
+              Findings are limited to the files and revision listed below.
             </p>
           </CardHeader>
           <CardBody>
@@ -26,7 +27,8 @@ export default function Review({ review, error }: ReviewProps) {
                   <li>Title: {review.review.metadata.repository_name}</li>
                   <li>Creator: {review.review.metadata.creator}</li>
                   <li>
-                    Last Commit Date: {review.review.metadata.last_commit_date}
+                    Last Commit Date:{' '}
+                    {displayValue(review.review.metadata.last_commit_date)}
                   </li>
                   <li>
                     Stars:{' '}
@@ -43,10 +45,29 @@ export default function Review({ review, error }: ReviewProps) {
                   <li>
                     Contributors:{' '}
                     <span className="text-sky-500">
-                      {review.review.metadata.contributors}
+                      {displayValue(review.review.metadata.contributors)}
                     </span>
                   </li>
                 </ul>
+                <h3 className="text-xl my-2">Review Scope</h3>
+                <ul>
+                  <li>Target: {review.review.scope.target_kind}</li>
+                  <li className="break-all">
+                    Revision: {review.review.scope.reference}
+                  </li>
+                  <li>
+                    Files reviewed: {review.review.scope.files_reviewed.length}
+                  </li>
+                  <li>
+                    Complete context:{' '}
+                    {review.review.scope.truncated ? 'No' : 'Yes'}
+                  </li>
+                </ul>
+                {review.review.scope.warnings.map((warning) => (
+                  <p className="text-sm text-amber-400 mt-1" key={warning}>
+                    {warning}
+                  </p>
+                ))}
                 <h3 className="text-xl my-2">Scoring Criteria</h3>
                 <ul>
                   <li>
@@ -105,7 +126,10 @@ export default function Review({ review, error }: ReviewProps) {
                 <ul className="flex flex-col gap-2">
                   {review.review.scoring_criteria.security.vulnerabilities.map(
                     (v) => (
-                      <li className="text-sm list-inside list-disc">
+                      <li
+                        className="text-sm list-inside list-disc"
+                        key={`${v.dependency}-${v.version}-${v.issue}`}
+                      >
                         {v.dependency} - {v.version} - {v.issue}
                       </li>
                     )
@@ -131,6 +155,35 @@ export default function Review({ review, error }: ReviewProps) {
                       .version_control_and_git_practices.feedback
                   }
                 </p>
+
+                <h3 className="text-xl my-2">Evidence-backed Findings</h3>
+                {review.review.findings.length === 0 ? (
+                  <p className="text-sm">
+                    No proven issues in the supplied context.
+                  </p>
+                ) : (
+                  <ul className="flex flex-col gap-3">
+                    {review.review.findings.map((finding) => (
+                      <li
+                        className="text-sm border border-zinc-600 rounded p-3"
+                        key={`${finding.file}-${finding.start_line}-${finding.title}`}
+                      >
+                        <p className="font-semibold">
+                          [{finding.severity.toUpperCase()}] {finding.title}
+                        </p>
+                        <p className="break-all">
+                          {finding.file}:{finding.start_line}
+                          {finding.end_line !== finding.start_line
+                            ? `-${finding.end_line}`
+                            : ''}
+                        </p>
+                        <p>Evidence: {finding.evidence}</p>
+                        <p>Impact: {finding.impact}</p>
+                        <p>Recommendation: {finding.recommendation}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 <h3 className="text-xl my-2">Suggestions for Improvement</h3>
                 <ul>

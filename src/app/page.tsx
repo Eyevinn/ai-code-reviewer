@@ -9,7 +9,7 @@ import {
   CardHeader,
   Input,
   Spinner
-} from '@nextui-org/react';
+} from '@heroui/react';
 import { IconSearch } from '@tabler/icons-react';
 import { useState } from 'react';
 import Review from './_components/Review';
@@ -24,6 +24,7 @@ export default function Page() {
   const handlePost = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr('');
+    setReview(undefined);
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
     const githubUrl = formData.get('url') as string;
@@ -38,12 +39,19 @@ export default function Page() {
       return;
     }
     try {
-      const review = await generateReview(githubUrl, apiUrl);
-      setReview(review[0]);
-      setIsLoading(false);
+      const [generatedReview, reviewError] = await generateReview(
+        githubUrl,
+        apiUrl
+      );
+      if (reviewError) {
+        setErr(reviewError);
+        return;
+      }
+      setReview(generatedReview);
     } catch (error) {
-      const err = JSON.stringify(error);
-      setErr(err);
+      setErr(error instanceof Error ? error.message : 'Review failed');
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -55,26 +63,42 @@ export default function Page() {
       >
         <CardHeader className="flex flex-col items-start gap-2">
           <h2 className="text-2xl">Review this code</h2>
-          <p className="text-sm">Please enter a github url to review</p>
+          <p className="text-sm">
+            Enter a GitHub repository or pull request URL to review
+          </p>
         </CardHeader>
         <CardBody>
           <form onSubmit={handlePost} className="flex flex-col gap-4">
-            <Input name="url" variant="bordered" color="primary" />
+            <Input
+              name="url"
+              type="url"
+              required
+              variant="bordered"
+              color="primary"
+            />
             <Button
               type="submit"
+              isDisabled={isLoading}
               endContent={<IconSearch />}
               variant="bordered"
               color="primary"
             >
-              Review this repository
+              Review this code
             </Button>
           </form>
         </CardBody>
         <CardFooter className="text-sm italic">
-          Please remember that the AI can make misstakes and falty assumptions
+          Please remember that the AI can make misstakes and faulty assumptions
         </CardFooter>
       </Card>
-      {isLoading ? <Spinner /> : <Review review={review} error={err} />}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center gap-4">
+          <p>Reviewing Repository, this could take a few minutes</p>
+          <Spinner />
+        </div>
+      ) : (
+        <Review review={review} error={err} />
+      )}
     </div>
   );
 }
