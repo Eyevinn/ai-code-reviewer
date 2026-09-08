@@ -11,21 +11,21 @@
 <div align="center">
 <br />
 
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/eyevinn/{{repo-name}}/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-[![made with hearth by Eyevinn](https://img.shields.io/badge/made%20with%20%E2%99%A5%20by-Eyevinn-59cbe8.svg?style=flat-square)](https://github.com/eyevinn)
-[![Slack](http://slack.streamingtech.se/badge.svg)](http://slack.streamingtech.se)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/Eyevinn/ai-code-reviewer/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![made with heart by Eyevinn](https://img.shields.io/badge/made%20with%20%E2%99%A5%20by-Eyevinn-59cbe8.svg?style=flat-square)](https://github.com/Eyevinn)
+[![Slack](https://slack.streamingtech.se/badge.svg)](https://slack.streamingtech.se)
 
 </div>
 
 ## Requirements
 
-- Node.js v18.0.0 or higher
+- Node.js v24.0.0 or higher
 - A modern web browser (Chrome, Firefox, Safari, Edge)
 - OpenAI API key
 
-### Eyevinn Open Source Cloude mode
+### Eyevinn Open Source Cloud mode
 
-If you want to run this project in a cloud environment you can run it as a service on [Eyevinn Open Source Cloud](www.osaas.io). All you need to do is to create a free account and try it out!
+If you want to run this project in a cloud environment you can run it as a service on [Eyevinn Open Source Cloud](https://www.osaas.io). All you need to do is to create a free account and try it out!
 
 ## Installation / Usage
 
@@ -45,9 +45,41 @@ or
 
 ```bash
 % OPENAI_API_KEY=your_api_key \
-  OPENAI_REVIEW_ASST=openai_asst_id \
   npm start
 ```
+
+The reviewer uses `gpt-5.4-mini` by default. You can select another Responses
+API-compatible model with `OPENAI_MODEL`. Set `GITHUB_PAT` for private
+repositories and to avoid GitHub's lower unauthenticated rate limits.
+
+By default, each server process permits 10 reviews per client IP and hour, and
+2 simultaneous reviews. Configure these limits with `REVIEW_RATE_LIMIT_MAX`
+and `MAX_CONCURRENT_REVIEWS`. Cross-origin browser requests are limited to
+`http://localhost:3000` and `http://127.0.0.1:3000`; set a comma-separated
+`CORS_ORIGINS` value when the frontend is hosted on other origins.
+The limiter is in-memory and therefore applies per server process. If the
+service runs behind a trusted reverse proxy, set `TRUST_PROXY=true` so the
+client IP is derived from forwarded headers; never enable it when clients can
+reach the service directly.
+These controls are not authentication. Put the service behind an authenticated
+gateway when OpenAI spend must be restricted to known users.
+
+### Review scope and data handling
+
+The input must be an HTTPS URL on `github.com` pointing to one of:
+
+- a repository, which resolves its default branch to an immutable commit;
+- a repository `/tree/<ref>` URL, which resolves that ref to an immutable
+  commit; or
+- a `/pull/<number>` URL, which reviews the exact head/base diff.
+
+Repository reviews include up to 20 prioritized text files. Pull request
+reviews include up to 50 patches. Individual files are limited to 20,000
+characters and the total context to 100,000 characters. The response reports
+the exact commit, included files, truncation, and other limitations. Selected
+source files or patches and repository metadata are sent to the configured
+OpenAI API model; do not submit code that your OpenAI data policy does not
+permit.
 
 Frontend is available at http://localhost:8000/ and API docs at http://localhost:8000/api/docs
 
@@ -59,7 +91,10 @@ To run the frontend you can run the following command:
 % npm run dev:app
 ```
 
-When both the server and frontend is up and running you can provide a gitHub URL in the GUI and the AI will review the code and provide feedback.
+When both the server and frontend are running, provide a supported GitHub
+repository or pull request URL in the GUI. The review contains evidence-backed
+file and line references for findings that can be proven from the supplied
+context.
 
 ## Development
 
@@ -75,7 +110,7 @@ See [CONTRIBUTING](CONTRIBUTING.md)
 
 # Support
 
-Join our [community on Slack](http://slack.streamingtech.se) where you can post any questions regarding any of our open source projects. Eyevinn's consulting business can also offer you:
+Join our [community on Slack](https://slack.streamingtech.se) where you can post any questions regarding any of our open source projects. Eyevinn's consulting business can also offer you:
 
 - Further development of this component
 - Customization and integration of this component into your platform

@@ -1,10 +1,5 @@
 import { Static, Type } from '@sinclair/typebox';
-import {
-  FastifyReply,
-  RawReplyDefaultExpression,
-  RawRequestDefaultExpression,
-  RawServerDefault
-} from 'fastify';
+import { FastifyReply } from 'fastify';
 import { InvalidInputError, NotFoundError } from '../utils/error';
 
 export const ErrorResponse = Type.Object({
@@ -12,12 +7,7 @@ export const ErrorResponse = Type.Object({
 });
 export type ErrorResponse = Static<typeof ErrorResponse>;
 
-export type ErrorReply = FastifyReply<
-  RawServerDefault,
-  RawRequestDefaultExpression,
-  RawReplyDefaultExpression,
-  { Reply: ErrorResponse }
->;
+export type ErrorReply = FastifyReply<{ Reply: ErrorResponse }>;
 
 export const errorReply = (reply: ErrorReply, err: unknown) => {
   if (err instanceof NotFoundError) {

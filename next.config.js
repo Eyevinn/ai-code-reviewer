@@ -2,8 +2,5 @@
 module.exports = {
   output: 'export',
   trailingSlash: true,
-  poweredByHeader: false,
-  experimental: {
-    instrumentationHook: true
-  }
+  poweredByHeader: false
 };

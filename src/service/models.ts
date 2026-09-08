@@ -21,16 +21,16 @@ export const ReviewSchema = Type.Object(
             creator: Type.String({
               description: 'The creator of the repository.'
             }),
-            last_commit_date: Type.String({
+            last_commit_date: Type.Union([Type.String(), Type.Null()], {
               description: 'The date when the last commit was made.'
             }),
             stars: Type.Number({
-              description: 'The number of starsgazers the repository have.'
+              description: 'The number of stargazers the repository has.'
             }),
             forks: Type.Number({
               description: 'The number of forks of the repository.'
             }),
-            contributors: Type.Number({
+            contributors: Type.Union([Type.Number(), Type.Null()], {
               description:
                 'The number of people who have contributed to the repository.'
             })
@@ -42,7 +42,9 @@ export const ReviewSchema = Type.Object(
             code_quality: Type.Object(
               {
                 score: Type.Number({
-                  description: 'The score achieved in code quality.'
+                  description: 'The score achieved in code quality.',
+                  minimum: 0,
+                  maximum: 30
                 }),
                 feedback: Type.String({
                   description: 'Feedback regarding code quality.'
@@ -53,7 +55,9 @@ export const ReviewSchema = Type.Object(
             security: Type.Object(
               {
                 score: Type.Number({
-                  description: 'The score achieved in security assessment.'
+                  description: 'The score achieved in security assessment.',
+                  minimum: 0,
+                  maximum: 30
                 }),
                 vulnerabilities: Type.Array(
                   Type.Object(
@@ -80,7 +84,9 @@ export const ReviewSchema = Type.Object(
             documentation: Type.Object(
               {
                 score: Type.Number({
-                  description: 'The score achieved for documentation quality.'
+                  description: 'The score achieved for documentation quality.',
+                  minimum: 0,
+                  maximum: 10
                 }),
                 feedback: Type.String({
                   description: 'Feedback regarding documentation completeness.'
@@ -92,7 +98,9 @@ export const ReviewSchema = Type.Object(
               {
                 score: Type.Number({
                   description:
-                    'The score achieved for project structure and testing.'
+                    'The score achieved for project structure and testing.',
+                  minimum: 0,
+                  maximum: 20
                 }),
                 feedback: Type.String({
                   description:
@@ -105,7 +113,9 @@ export const ReviewSchema = Type.Object(
               {
                 score: Type.Number({
                   description:
-                    'The score achieved for version control and Git practices.'
+                    'The score achieved for version control and Git practices.',
+                  minimum: 0,
+                  maximum: 10
                 }),
                 feedback: Type.String({
                   description: 'Feedback regarding version control practices.'
@@ -115,10 +125,65 @@ export const ReviewSchema = Type.Object(
             ),
             overall_score: Type.Number({
               description:
-                'The overall score calculated based on all the score categories.'
+                'The overall score calculated based on all the score categories.',
+              minimum: 0,
+              maximum: 100
             })
           },
           { additionalProperties: false }
+        ),
+        scope: Type.Object(
+          {
+            target_kind: Type.Union([
+              Type.Literal('repository'),
+              Type.Literal('pull_request')
+            ]),
+            reference: Type.String({
+              description: 'The exact commit SHA that was reviewed.'
+            }),
+            base_reference: Type.Union([Type.String(), Type.Null()], {
+              description: 'The base commit SHA for a pull request.'
+            }),
+            files_reviewed: Type.Array(Type.String(), {
+              description: 'The files included in the supplied review context.'
+            }),
+            truncated: Type.Boolean({
+              description: 'Whether review context was omitted by a limit.'
+            }),
+            warnings: Type.Array(Type.String(), {
+              description: 'Limitations that affect review completeness.'
+            })
+          },
+          { additionalProperties: false }
+        ),
+        findings: Type.Array(
+          Type.Object(
+            {
+              severity: Type.Union([
+                Type.Literal('critical'),
+                Type.Literal('high'),
+                Type.Literal('medium'),
+                Type.Literal('low'),
+                Type.Literal('info')
+              ]),
+              title: Type.String(),
+              file: Type.String({
+                description: 'Exact path from the supplied review context.'
+              }),
+              start_line: Type.Integer({ minimum: 1 }),
+              end_line: Type.Integer({ minimum: 1 }),
+              evidence: Type.String({
+                description: 'Concrete evidence visible in the supplied code.'
+              }),
+              impact: Type.String(),
+              recommendation: Type.String()
+            },
+            { additionalProperties: false }
+          ),
+          {
+            description:
+              'Evidence-backed findings. Empty when the supplied context does not prove an issue.'
+          }
         ),
         suggestions_for_improvement: Type.Array(Type.String(), {
           description:
